@@ -9,7 +9,7 @@ plain='\033[0m'
 cur_dir=$(pwd)
 
 # check root
-[[ $EUID -ne 0 ]] && echo -e "${red}Fatal error: ${plain} Please run this script with root privilege \n " && exit 1
+[[ $EUID -ne 0 ]] && echo -e "${red}严重错误: ${plain} 请使用 root 权限运行此脚本 \n " && exit 1
 
 # Check OS and set release variable
 if [[ -f /etc/os-release ]]; then
@@ -19,10 +19,10 @@ elif [[ -f /usr/lib/os-release ]]; then
     source /usr/lib/os-release
     release=$ID
 else
-    echo "Failed to check the system OS, please contact the author!" >&2
+    echo "检测系统 OS 失败，请联系作者！" >&2
     exit 1
 fi
-echo "The OS release is: $release"
+echo "系统发行版为: $release"
 
 arch() {
     case "$(uname -m)" in
@@ -33,11 +33,11 @@ arch() {
     armv6* | armv6) echo 'armv6' ;;
     armv5* | armv5) echo 'armv5' ;;
     s390x) echo 's390x' ;;
-    *) echo -e "${green}Unsupported CPU architecture! ${plain}" && rm -f install.sh && exit 1 ;;
+    *) echo -e "${green}不支持的 CPU 架构! ${plain}" && rm -f install.sh && exit 1 ;;
     esac
 }
 
-echo "Arch: $(arch)"
+echo "系统架构: $(arch)"
 
 install_base() {
     case "${release}" in
@@ -97,45 +97,45 @@ config_after_install() {
             local config_username=$(gen_random_string 10)
             local config_password=$(gen_random_string 10)
 
-            read -rp "Would you like to customize the Panel Port settings? (If not, a random port will be applied) [y/n]: " config_confirm
+            read -rp "是否自定义面板端口？(不自定义将随机生成) [y/n]: " config_confirm
             if [[ "${config_confirm}" == "y" || "${config_confirm}" == "Y" ]]; then
-                read -rp "Please set up the panel port: " config_port
-                echo -e "${yellow}Your Panel Port is: ${config_port}${plain}"
+                read -rp "请设置面板端口: " config_port
+                echo -e "${yellow}您的面板端口是: ${config_port}${plain}"
             else
                 local config_port=$(shuf -i 1024-62000 -n 1)
-                echo -e "${yellow}Generated random port: ${config_port}${plain}"
+                echo -e "${yellow}生成随机端口: ${config_port}${plain}"
             fi
 
             /usr/local/x-ui/x-ui setting -username "${config_username}" -password "${config_password}" -port "${config_port}" -webBasePath "${config_webBasePath}"
-            echo -e "This is a fresh installation, generating random login info for security concerns:"
+            echo -e "这是全新安装，为安全考虑生成随机登录信息:"
             echo -e "###############################################"
-            echo -e "${green}Username: ${config_username}${plain}"
-            echo -e "${green}Password: ${config_password}${plain}"
-            echo -e "${green}Port: ${config_port}${plain}"
+            echo -e "${green}用户名: ${config_username}${plain}"
+            echo -e "${green}密码: ${config_password}${plain}"
+            echo -e "${green}端口: ${config_port}${plain}"
             echo -e "${green}WebBasePath: ${config_webBasePath}${plain}"
-            echo -e "${green}Access URL: http://${server_ip}:${config_port}/${config_webBasePath}${plain}"
+            echo -e "${green}访问 URL: http://${server_ip}:${config_port}/${config_webBasePath}${plain}"
             echo -e "###############################################"
         else
             local config_webBasePath=$(gen_random_string 18)
-            echo -e "${yellow}WebBasePath is missing or too short. Generating a new one...${plain}"
+            echo -e "${yellow}WebBasePath 缺失或过短，正在生成新的...${plain}"
             /usr/local/x-ui/x-ui setting -webBasePath "${config_webBasePath}"
-            echo -e "${green}New WebBasePath: ${config_webBasePath}${plain}"
-            echo -e "${green}Access URL: http://${server_ip}:${existing_port}/${config_webBasePath}${plain}"
+            echo -e "${green}新的 WebBasePath: ${config_webBasePath}${plain}"
+            echo -e "${green}访问 URL: http://${server_ip}:${existing_port}/${config_webBasePath}${plain}"
         fi
     else
         if [[ "$existing_hasDefaultCredential" == "true" ]]; then
             local config_username=$(gen_random_string 10)
             local config_password=$(gen_random_string 10)
 
-            echo -e "${yellow}Default credentials detected. Security update required...${plain}"
+            echo -e "${yellow}检测到默认账户，出于安全需要更新...${plain}"
             /usr/local/x-ui/x-ui setting -username "${config_username}" -password "${config_password}"
-            echo -e "Generated new random login credentials:"
+            echo -e "生成新的随机登录信息:"
             echo -e "###############################################"
-            echo -e "${green}Username: ${config_username}${plain}"
-            echo -e "${green}Password: ${config_password}${plain}"
+            echo -e "${green}用户名: ${config_username}${plain}"
+            echo -e "${green}密码: ${config_password}${plain}"
             echo -e "###############################################"
         else
-            echo -e "${green}Username, Password, and WebBasePath are properly set. Exiting...${plain}"
+            echo -e "${green}用户名、密码和 WebBasePath 已正确设置，退出...${plain}"
         fi
     fi
 
@@ -149,17 +149,17 @@ install_x-ui() {
     if [ $# == 0 ]; then
         tag_version=$(curl -Ls "https://api.github.com/repos/MHSanaei/3x-ui/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         if [[ ! -n "$tag_version" ]]; then
-            echo -e "${yellow}Trying to fetch version with IPv4...${plain}"
+            echo -e "${yellow}尝试使用 IPv4 获取版本...${plain}"
             tag_version=$(curl -4 -Ls "https://api.github.com/repos/MHSanaei/3x-ui/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
             if [[ ! -n "$tag_version" ]]; then
-                echo -e "${red}Failed to fetch x-ui version, it may be due to GitHub API restrictions, please try it later${plain}"
+                echo -e "${red}获取 x-ui 版本失败，可能是 GitHub API 限制，请稍后再试${plain}"
                 exit 1
             fi
         fi
-        echo -e "Got x-ui latest version: ${tag_version}, beginning the installation..."
+        echo -e "获取到 x-ui 最新版本: ${tag_version}，开始安装..."
         wget --inet4-only -N -O /usr/local/x-ui-linux-$(arch).tar.gz https://gb.333886.xyz/https://github.com/MHSanaei/3x-ui/releases/download/${tag_version}/x-ui-linux-$(arch).tar.gz
         if [[ $? -ne 0 ]]; then
-            echo -e "${red}Downloading x-ui failed, please be sure that your server can access GitHub ${plain}"
+            echo -e "${red}下载 x-ui 失败，请确保服务器可以访问 GitHub ${plain}"
             exit 1
         fi
     else
@@ -168,21 +168,21 @@ install_x-ui() {
         min_version="2.3.5"
 
         if [[ "$(printf '%s\n' "$min_version" "$tag_version_numeric" | sort -V | head -n1)" != "$min_version" ]]; then
-            echo -e "${red}Please use a newer version (at least v2.3.5). Exiting installation.${plain}"
+            echo -e "${red}请使用更新的版本 (至少 v2.3.5)。退出安装。${plain}"
             exit 1
         fi
 
         url="https://gb.333886.xyz/https://github.com/MHSanaei/3x-ui/releases/download/${tag_version}/x-ui-linux-$(arch).tar.gz"
-        echo -e "Beginning to install x-ui $1"
+        echo -e "开始安装 x-ui $1"
         wget --inet4-only -N -O /usr/local/x-ui-linux-$(arch).tar.gz ${url}
         if [[ $? -ne 0 ]]; then
-            echo -e "${red}Download x-ui $1 failed, please check if the version exists ${plain}"
+            echo -e "${red}下载 x-ui $1 失败，请检查版本是否存在 ${plain}"
             exit 1
         fi
     fi
     wget --inet4-only -O /usr/bin/x-ui-temp https://gb.333886.xyz/https://raw.githubusercontent.com/MHSanaei/3x-ui/main/x-ui.sh
     if [[ $? -ne 0 ]]; then
-        echo -e "${red}Failed to download x-ui.sh${plain}"
+        echo -e "${red}下载 x-ui.sh 失败${plain}"
         exit 1
     fi
 
@@ -219,7 +219,7 @@ install_x-ui() {
     if [[ $release == "alpine" ]]; then
         wget --inet4-only -O /etc/init.d/x-ui https://raw.githubusercontent.com/MHSanaei/3x-ui/main/x-ui.rc
         if [[ $? -ne 0 ]]; then
-            echo -e "${red}Failed to download x-ui.rc${plain}"
+            echo -e "${red}下载 x-ui.rc 失败${plain}"
             exit 1
         fi
         chmod +x /etc/init.d/x-ui
@@ -232,28 +232,28 @@ install_x-ui() {
         systemctl start x-ui
     fi
 
-    echo -e "${green}x-ui ${tag_version}${plain} installation finished, it is running now..."
+    echo -e "${green}x-ui ${tag_version}${plain} 安装完成，正在运行..."
     echo -e ""
     echo -e "┌───────────────────────────────────────────────────────┐
-│  ${blue}x-ui control menu usages (subcommands):${plain}              │
+│  ${blue}x-ui 管理菜单及子命令用法:${plain}                         │
 │                                                       │
-│  ${blue}x-ui${plain}              - Admin Management Script          │
-│  ${blue}x-ui start${plain}        - Start                            │
-│  ${blue}x-ui stop${plain}         - Stop                             │
-│  ${blue}x-ui restart${plain}      - Restart                          │
-│  ${blue}x-ui status${plain}       - Current Status                   │
-│  ${blue}x-ui settings${plain}     - Current Settings                 │
-│  ${blue}x-ui enable${plain}       - Enable Autostart on OS Startup   │
-│  ${blue}x-ui disable${plain}      - Disable Autostart on OS Startup  │
-│  ${blue}x-ui log${plain}          - Check logs                       │
-│  ${blue}x-ui banlog${plain}       - Check Fail2ban ban logs          │
-│  ${blue}x-ui update${plain}       - Update                           │
-│  ${blue}x-ui legacy${plain}       - Legacy version                   │
-│  ${blue}x-ui install${plain}      - Install                          │
-│  ${blue}x-ui uninstall${plain}    - Uninstall                        │
+│  ${blue}x-ui${plain}              - 管理面板脚本                  │
+│  ${blue}x-ui start${plain}        - 启动服务                     │
+│  ${blue}x-ui stop${plain}         - 停止服务                     │
+│  ${blue}x-ui restart${plain}      - 重启服务                     │
+│  ${blue}x-ui status${plain}       - 查看当前状态                 │
+│  ${blue}x-ui settings${plain}     - 查看当前设置                 │
+│  ${blue}x-ui enable${plain}       - 开机自启                      │
+│  ${blue}x-ui disable${plain}      - 取消开机自启                  │
+│  ${blue}x-ui log${plain}          - 查看日志                     │
+│  ${blue}x-ui banlog${plain}       - 查看 Fail2ban 封禁日志       │
+│  ${blue}x-ui update${plain}       - 更新                          │
+│  ${blue}x-ui legacy${plain}       - 旧版本管理                     │
+│  ${blue}x-ui install${plain}      - 安装                          │
+│  ${blue}x-ui uninstall${plain}    - 卸载                          │
 └───────────────────────────────────────────────────────┘"
 }
 
-echo -e "${green}Running...${plain}"
+echo -e "${green}执行中...${plain}"
 install_base
 install_x-ui $1
