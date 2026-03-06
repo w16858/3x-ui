@@ -688,15 +688,15 @@ show_status() {
     check_status
     case $? in
     0)
-        echo -e "Panel state: ${green}Running${plain}"
+        echo -e "面板状态: ${green}运行中${plain}"
         show_enable_status
         ;;
     1)
-        echo -e "Panel state: ${yellow}Not Running${plain}"
+        echo -e "面板状态: ${yellow}未运行${plain}"
         show_enable_status
         ;;
     2)
-        echo -e "Panel state: ${red}Not Installed${plain}"
+        echo -e "面板状态: ${red}未安装${plain}"
         ;;
     esac
     show_xray_status
@@ -705,9 +705,9 @@ show_status() {
 show_enable_status() {
     check_enabled
     if [[ $? == 0 ]]; then
-        echo -e "Start automatically: ${green}Yes${plain}"
+        echo -e "是否开机自启: ${green}是${plain}"
     else
-        echo -e "Start automatically: ${red}No${plain}"
+        echo -e "是否开机自启: ${red}否${plain}"
     fi
 }
 
@@ -723,9 +723,9 @@ check_xray_status() {
 show_xray_status() {
     check_xray_status
     if [[ $? == 0 ]]; then
-        echo -e "xray state: ${green}Running${plain}"
+        echo -e "xray 状态: ${green}运行中${plain}"
     else
-        echo -e "xray state: ${red}Not Running${plain}"
+        echo -e "xray 状态: ${red}未运行${plain}"
     fi
 }
 
@@ -2219,7 +2219,7 @@ show_menu() {
 ╚────────────────────────────────────────────────╝
 "
     show_status
-    echo && read -rp "Please enter your selection [0-26]: " num
+    echo && read -rp "请输入你的选择 [0-26]: " num
 
     case "${num}" in
     0)
